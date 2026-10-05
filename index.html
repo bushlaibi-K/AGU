@@ -408,6 +408,21 @@
         to { transform: scale(4); opacity: 0; }
     }
 
+    /* red dot: the next question will be the Vision */
+    .vision-dot {
+        position: fixed;
+        top: 14px; left: 14px;
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        background: #e53935;
+        box-shadow: 0 0 6px rgba(229,57,53,0.8);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+        z-index: 5;
+    }
+    .vision-dot.show { opacity: 1; }
+
     #hidden-trigger {
         position: absolute;
         top: 0; right: 0;
@@ -428,6 +443,7 @@
     <input type="file" id="file-input" accept="image/*" onchange="changeBackground(event)">
     <div id="hidden-trigger" ondblclick="triggerUpload(event)"></div>
     <div class="watermark"></div>
+    <div class="vision-dot" id="visionDot"></div>
 
     <div class="stage">
         <div class="brand-mark">
@@ -463,8 +479,12 @@
         let bag = [];
         let lastIndex = -1;
 
+        const VISION_INDEX = 0;
+        const VISION_CHANCE = 0.4; // Vision joins only some rounds, so it shows up less often
+
         function refillBag() {
-            bag = questions.map((_, i) => i);
+            bag = questions.map((_, i) => i)
+                .filter(i => i !== VISION_INDEX || Math.random() < VISION_CHANCE);
             for (let i = bag.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [bag[i], bag[j]] = [bag[j], bag[i]];
@@ -480,6 +500,14 @@
             return bag.pop();
         }
 
+        // The upcoming question is decided in advance so we can hint at it.
+        let upcoming = nextIndex();
+        const dotEl = document.getElementById('visionDot');
+
+        function updateDot() {
+            dotEl.classList.toggle('show', mode === 'intro' && upcoming === VISION_INDEX);
+        }
+
         // ── DOM refs ──
         const arEl    = document.getElementById('arabicDisplay');
         const enEl    = document.getElementById('englishDisplay');
@@ -488,6 +516,7 @@
 
         let mode = 'intro';
         let isAnimating = false;
+        updateDot();
 
         // Start with idle float after entrance
         setTimeout(() => card.classList.add('idle'), 1200);
@@ -668,12 +697,15 @@
             if (isAnimating) return;
 
             if (mode === 'intro') {
-                const index = questions.length > 1 ? nextIndex() : 0;
+                const index = upcoming;
                 lastIndex = index;
+                upcoming = nextIndex();
                 mode = 'question';
+                updateDot();
                 spinToQuestion(index);
             } else {
                 mode = 'intro';
+                updateDot();
                 isAnimating = true;
                 showIntro();
             }
