@@ -480,11 +480,12 @@
         let lastIndex = -1;
 
         const VISION_INDEX = 0;
-        const VISION_CHANCE = 0.4; // Vision joins only some rounds, so it shows up less often
+        const MISSION_INDEX = 1;
+        const MISSION_CHANCE = 0.4; // Mission joins only some rounds, so it shows up less often
 
         function refillBag() {
             bag = questions.map((_, i) => i)
-                .filter(i => i !== VISION_INDEX || Math.random() < VISION_CHANCE);
+                .filter(i => i !== MISSION_INDEX || Math.random() < MISSION_CHANCE);
             for (let i = bag.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [bag[i], bag[j]] = [bag[j], bag[i]];
