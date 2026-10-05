@@ -408,21 +408,6 @@
         to { transform: scale(4); opacity: 0; }
     }
 
-    /* red dot: the next question will be the Vision */
-    .vision-dot {
-        position: fixed;
-        top: 14px; left: 14px;
-        width: 10px; height: 10px;
-        border-radius: 50%;
-        background: #e53935;
-        box-shadow: 0 0 6px rgba(229,57,53,0.8);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.25s ease;
-        z-index: 5;
-    }
-    .vision-dot.show { opacity: 1; }
-
     #hidden-trigger {
         position: absolute;
         top: 0; right: 0;
@@ -443,7 +428,6 @@
     <input type="file" id="file-input" accept="image/*" onchange="changeBackground(event)">
     <div id="hidden-trigger" ondblclick="triggerUpload(event)"></div>
     <div class="watermark"></div>
-    <div class="vision-dot" id="visionDot"></div>
 
     <div class="stage">
         <div class="brand-mark">
@@ -503,10 +487,11 @@
 
         // The upcoming question is decided in advance so we can hint at it.
         let upcoming = nextIndex();
-        const dotEl = document.getElementById('visionDot');
 
-        function updateDot() {
-            dotEl.classList.toggle('show', mode === 'intro' && upcoming === VISION_INDEX);
+        // Silent cue: a short double buzz on the device (nothing visible on screen)
+        // when the next question will be the Vision.
+        function vibrateIfVision() {
+            if (upcoming === VISION_INDEX && navigator.vibrate) navigator.vibrate([60, 80, 60]);
         }
 
         // ── DOM refs ──
@@ -517,7 +502,6 @@
 
         let mode = 'intro';
         let isAnimating = false;
-        updateDot();
 
         // Start with idle float after entrance
         setTimeout(() => card.classList.add('idle'), 1200);
@@ -702,11 +686,10 @@
                 lastIndex = index;
                 upcoming = nextIndex();
                 mode = 'question';
-                updateDot();
-                spinToQuestion(index);
+                        spinToQuestion(index);
             } else {
                 mode = 'intro';
-                updateDot();
+                vibrateIfVision();
                 isAnimating = true;
                 showIntro();
             }
