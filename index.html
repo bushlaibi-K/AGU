@@ -388,6 +388,9 @@
         animation: hintPulse 3s ease-in-out infinite;
     }
 
+    /* bold hint = the next question is the Vision */
+    .hint.bold { font-weight: 800; }
+
     @keyframes hintPulse {
         0%, 100% { opacity: 0.65; }
         50%      { opacity: 0.95; }
@@ -488,10 +491,10 @@
         // The upcoming question is decided in advance so we can hint at it.
         let upcoming = nextIndex();
 
-        // Silent cue: a short double buzz on the device (nothing visible on screen)
-        // when the next question will be the Vision.
-        function vibrateIfVision() {
-            if (upcoming === VISION_INDEX && navigator.vibrate) navigator.vibrate([60, 80, 60]);
+        // Subtle cue: the bottom hint turns bold when the next question will be the Vision.
+        const hintEl = document.querySelector('.hint');
+        function updateHint() {
+            hintEl.classList.toggle('bold', mode === 'intro' && upcoming === VISION_INDEX);
         }
 
         // ── DOM refs ──
@@ -502,6 +505,7 @@
 
         let mode = 'intro';
         let isAnimating = false;
+        updateHint();
 
         // Start with idle float after entrance
         setTimeout(() => card.classList.add('idle'), 1200);
@@ -686,10 +690,11 @@
                 lastIndex = index;
                 upcoming = nextIndex();
                 mode = 'question';
+                updateHint();
                         spinToQuestion(index);
             } else {
                 mode = 'intro';
-                vibrateIfVision();
+                updateHint();
                 isAnimating = true;
                 showIntro();
             }
